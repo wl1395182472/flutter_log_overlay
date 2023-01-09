@@ -14,3 +14,6 @@
 
 * update homepage
 
+## 0.0.5
+
+* update for restructure Logger from plugin:logger
