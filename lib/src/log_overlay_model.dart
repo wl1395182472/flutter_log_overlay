@@ -1,9 +1,9 @@
 class LogOverlayModel {
-  final bool isCore;
-  final String content;
+  final bool isError;
+  final List<String> content;
 
   LogOverlayModel({
-    required this.isCore,
+    required this.isError,
     required this.content,
   });
 }

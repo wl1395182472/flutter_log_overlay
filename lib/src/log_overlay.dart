@@ -9,63 +9,113 @@ class FlutterLogOverlay {
   ///(MaterialApp的context还未对页面开始初始化，无法获取MediaQuery)
   ///
   ///(需要在home的initState中第二帧开始初始化)
-  static late BuildContext notMaterialAppContext;
+  static late BuildContext _currentContext;
 
   ///弹窗的宽度
-  static double width = 300.0;
+  static double _width = 0.0;
 
   ///弹窗的高度
-  static double height = 500.0;
+  static double _height = 0.0;
 
   ///控制弹窗的左上角的x轴坐标(相对于屏幕)
-  static double overlayLeft = MediaQuery.of(notMaterialAppContext).padding.left;
+  static double _overlayLeft = 0.0;
 
   ///控制弹窗的左上角的yx轴坐标(相对于屏幕)
-  static double overlayTop = MediaQuery.of(notMaterialAppContext).padding.top;
+  static double _overlayTop = 0.0;
+
+  ///窗口的背景颜色
+  static Color? _backgroundColor;
+
+  ///标题的背景颜色
+  static Color? _barColor;
+
+  ///消息的背景颜色
+  static Color? _itemColor;
+
+  ///error消息的背景颜色
+  static Color? _errorColor;
+
+  ///需要标题
+  static bool _needTitle = true;
+
+  ///需要清除按钮
+  static bool _needClean = true;
+
+  ///初始化
+  ///
+  ///[context]为当前页面的context
+  static void init({
+    required BuildContext context,
+    double? width,
+    double? height,
+    double? overlayLeft,
+    double? overlayTop,
+    Color? backgroundColor,
+    Color? barColor,
+    Color? itemColor,
+    Color? errorColor,
+    bool needTitle = true,
+    bool needClean = true,
+  }) {
+    _currentContext = context;
+    _width = width ?? 300.0;
+    _height = height ?? 500.0;
+    _overlayLeft = overlayLeft ?? MediaQuery.of(_currentContext).padding.left;
+    _overlayTop = overlayTop ?? MediaQuery.of(_currentContext).padding.top;
+    _backgroundColor = backgroundColor;
+    _barColor = barColor;
+    _itemColor = itemColor;
+    _errorColor = errorColor;
+    _needTitle = needTitle;
+    _needClean = needClean;
+  }
 
   ///使用OverlayEntry全局悬浮
   static final OverlayEntry entry = OverlayEntry(
     builder: (context) {
       final mediaQuery = MediaQuery.of(context);
       return Positioned(
-        left: overlayLeft,
-        top: overlayTop,
-        child: GestureDetector(
-          behavior: HitTestBehavior.translucent,
+        left: _overlayLeft,
+        top: _overlayTop,
+        child: LogOverlayWidget(
+          width: _width,
+          height: _height,
+          logList: _logList,
+          backgroundColor: _backgroundColor,
+          barColor: _barColor,
+          itemColor: _itemColor,
+          errorColor: _errorColor,
+          needTitle: _needTitle,
+          needClean: _needClean,
           onDoubleTap: hide,
-          onPanUpdate: (DragUpdateDetails detail) {
+          onPanUpdate: (DragUpdateDetails detail) async {
             final overlay = Overlay.of(context);
             if (overlay != null) {
               //屏幕约束
-              final left = overlayLeft;
-              final right = width + left;
-              final top = overlayTop;
-              final bottom = height + top;
+              final left = _overlayLeft;
+              final right = _width + left;
+              final top = _overlayTop;
+              final bottom = _height + top;
               if (left < mediaQuery.padding.left) {
-                overlayLeft = mediaQuery.padding.left;
+                _overlayLeft = mediaQuery.padding.left;
               } else if (right >
                   (mediaQuery.size.width - mediaQuery.padding.right)) {
-                overlayLeft =
-                    mediaQuery.size.width - width - mediaQuery.padding.right;
+                _overlayLeft =
+                    mediaQuery.size.width - _width - mediaQuery.padding.right;
               } else if (top < mediaQuery.padding.top) {
-                overlayTop = mediaQuery.padding.top;
+                _overlayTop = mediaQuery.padding.top;
               } else if (bottom >
                   (mediaQuery.size.height - mediaQuery.padding.bottom)) {
-                overlayTop =
-                    mediaQuery.size.height - height - mediaQuery.padding.bottom;
+                _overlayTop = mediaQuery.size.height -
+                    _height -
+                    mediaQuery.padding.bottom;
               } else {
-                overlayLeft += detail.delta.dx;
-                overlayTop += detail.delta.dy;
+                _overlayLeft += detail.delta.dx;
+                _overlayTop += detail.delta.dy;
               }
-              // ignore: invalid_use_of_protected_member
-              overlay.setState(() {});
+              await _update();
             }
           },
-          child: LogOverlayWidget(
-            width: width,
-            height: height,
-            logList: _logList,
-          ),
         ),
       );
     },
@@ -76,7 +126,7 @@ class FlutterLogOverlay {
 
   ///展示悬浮
   static void show() {
-    final overlay = Overlay.of(notMaterialAppContext);
+    final overlay = Overlay.of(_currentContext);
     if (overlay != null) {
       if (!isShow) {
         overlay.insert(entry);
@@ -92,9 +142,9 @@ class FlutterLogOverlay {
   }
 
   ///更新悬浮
-  static void _update() {
+  static Future<void> _update() async {
     if (isShow) {
-      final overlay = Overlay.of(notMaterialAppContext);
+      final overlay = Overlay.of(_currentContext);
       if (overlay != null) {
         // ignore: invalid_use_of_protected_member
         overlay.setState(() {});
@@ -108,19 +158,21 @@ class FlutterLogOverlay {
   ///增加新日志
   static void addLog({
     required bool isCore,
-    required String content,
-  }) {
-    _logList.add(LogOverlayModel(
-      isCore: isCore,
-      content: content,
-    ));
-    _update();
+    required List<String> content,
+  }) async {
+    _logList.add(
+      LogOverlayModel(
+        isError: isCore,
+        content: content,
+      ),
+    );
+    await _update();
   }
 
   ///清空日志
-  static void clearLog() {
+  static void clearLog() async {
     _logList.clear();
-    _update();
+    await _update();
   }
 
   ///上次拖动的时间戳
