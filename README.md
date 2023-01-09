@@ -11,26 +11,9 @@ Must
   }
 ```
 
-Optional
-```dart
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onPanEnd: FlutterLogOverlay.showOverlayPan,
-      behavior: HitTestBehavior.translucent,
-      child: const MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: FirstPgae(),
-      ),
-    );
-  }
-```
-
 Use
 ```dart
-  void showLogOverlay(){
-    FlutterLogOverlay.show();
-  }
+FlutterLogOverlay.show(); 
 ```
 
 plugin for logger
@@ -45,7 +28,6 @@ final sLog = MyLogger(
   ),
 );
 
-///类方法重构，增加FlutterLogOverlay.addLog打印日志
 class MyLogger extends Logger {
   LogFilter? filter;
   LogPrinter? printer;
@@ -74,7 +56,12 @@ class MyLogger extends Logger {
     _startTime = DateTime.now();
     FlutterLogOverlay.addLog(
       isCore: level == Level.error,
-      content: [getTime(), message],
+      content: [
+        getTime(),
+        "--------------------",
+        ((printer ?? PrettyPrinter()) as PrettyPrinter)
+            .stringifyMessage(message),
+      ],
     );
     super.log(
       level,
@@ -121,4 +108,19 @@ class MyLogger extends Logger {
     return '0$n';
   }
 }
+```
+
+Optional
+```dart
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onPanEnd: FlutterLogOverlay.showOverlayPan,
+      behavior: HitTestBehavior.translucent,
+      child: const MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: FirstPgae(),
+      ),
+    );
+  }
 ```
