@@ -1,15 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_log_overlay/flutter_log_overlay.dart';
 
-class LogOverlayWidget extends StatefulWidget {
-  ///日志列表
-  final List<LogOverlayModel> logList;
+class LogOverlayWidget extends StatelessWidget {
+  ///控制弹窗的左上角的x轴坐标(相对于屏幕)
+  final double overlayLeft;
+
+  ///控制弹窗的左上角的yx轴坐标(相对于屏幕)
+  final double overlayTop;
 
   ///窗口的宽度
   final double width;
 
   ///窗口的高度
   final double height;
+
+  ///日志列表
+  final List<LogOverlayModel> logList;
+
+  ///标题的高度
+  final double titleHeight;
+
+  ///窗口的背景颜色
+  final Color? backgroundColor;
 
   ///标题的背景颜色
   final Color? barColor;
@@ -20,53 +32,59 @@ class LogOverlayWidget extends StatefulWidget {
   ///error消息的背景颜色
   final Color? errorColor;
 
+  ///日志的TextStyle
+  final TextStyle? logTextStyle;
+
   ///需要标题
   final bool needTitle;
 
   ///需要清除按钮
   final bool needClean;
 
-  ///日志的TextStyle
-  final TextStyle? logTextStyle;
+  ///是否展开listview
+  final bool showListView;
 
-  ///双击关闭
+  ///单击展开或收起listview
+  final void Function()? onTap;
+
+  ///双击隐藏listview
   final void Function()? onDoubleTap;
 
-  ///位置更新刷新
+  ///拖动改变位置
   final void Function(DragUpdateDetails)? onPanUpdate;
 
-  const LogOverlayWidget({
+  LogOverlayWidget({
     Key? key,
+    required this.overlayLeft,
+    required this.overlayTop,
     required this.width,
     required this.height,
+    required this.logList,
+    required this.titleHeight,
+    this.backgroundColor,
     this.barColor,
     this.itemColor,
     this.errorColor,
-    required this.logList,
+    this.logTextStyle,
     this.needTitle = true,
     this.needClean = true,
-    this.logTextStyle,
+    this.showListView = true,
+    this.onTap,
     this.onDoubleTap,
     this.onPanUpdate,
   }) : super(key: key);
 
-  @override
-  State<LogOverlayWidget> createState() => _LogOverlayWidgetState();
-}
-
-class _LogOverlayWidgetState extends State<LogOverlayWidget> {
-  bool _showListView = true;
+  ///控制scrollbar和listview的滚动控制
   final ScrollController _scrollController = ScrollController();
 
   @override
   Widget build(BuildContext context) {
     final currentContext = MediaQuery.of(context);
     return Container(
-      width: widget.width,
-      height: widget.height,
-      color: Colors.transparent,
+      width: width,
+      height: showListView ? height : titleHeight,
       constraints: BoxConstraints(
-        minHeight: widget.needTitle ? 60.0 : 0.0,
+        minHeight: needTitle ? titleHeight : 0.0,
         maxWidth: currentContext.size.width -
             currentContext.padding.left -
             currentContext.padding.right,
@@ -77,29 +95,20 @@ class _LogOverlayWidgetState extends State<LogOverlayWidget> {
       child: Column(
         children: [
           //标题显示
-          if (widget.needTitle)
-            GestureDetector(
-              behavior: HitTestBehavior.translucent,
-              onTap: () {
-                setState(() {
-                  _showListView = !_showListView;
-                });
-              },
-              onDoubleTap: widget.onDoubleTap,
-              onPanUpdate: widget.onPanUpdate,
-              child: Material(
-                color: Colors.transparent,
-                child: buildBar(
-                  color: widget.barColor ?? Colors.yellowAccent,
-                ),
+          if (needTitle)
+            Material(
+              color: Colors.transparent,
+              child: buildBar(
+                color: barColor ?? Colors.yellowAccent,
               ),
             ),
+
           //堆栈信息列表
-          if (_showListView)
+          if (showListView)
             buildListview(
               context: context,
-              color: widget.itemColor ?? Colors.greenAccent,
-              errorColor: widget.errorColor ?? Colors.redAccent,
+              color: itemColor ?? Colors.greenAccent,
+              errorColor: errorColor ?? Colors.redAccent,
             ),
         ],
       ),
@@ -111,8 +120,8 @@ class _LogOverlayWidgetState extends State<LogOverlayWidget> {
     Color? color,
   }) {
     return Container(
-      width: widget.width,
-      height: 60.0,
+      width: width,
+      height: titleHeight,
       color: color,
       alignment: Alignment.centerLeft,
       padding: const EdgeInsets.symmetric(
@@ -122,16 +131,25 @@ class _LogOverlayWidgetState extends State<LogOverlayWidget> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          FittedBox(
-            fit: BoxFit.fitWidth,
-            child: Text(
-              "调试控制台\n"
-              "当前信息数:${widget.logList.length}\n"
-              "(此区域可以拖动 单击展开或收起 双击隐藏)",
+          Expanded(
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: onTap,
+              onDoubleTap: onDoubleTap,
+              onPanUpdate: onPanUpdate,
+              child: FittedBox(
+                fit: BoxFit.fitWidth,
+                child: Text(
+                  "调试控制台(${showListView ? '展开' : '收起'})\n"
+                  "当前信息数:${logList.length}\n"
+                  "(此区域可以拖动 单击展开或收起 双击隐藏)",
+                ),
+              ),
             ),
           ),
-          if (widget.needClean)
-            InkWell(
+          if (needClean)
+            GestureDetector(
+              behavior: HitTestBehavior.translucent,
               onTap: () => FlutterLogOverlay.clearLog(),
               child: const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 10.0),
@@ -151,8 +169,8 @@ class _LogOverlayWidgetState extends State<LogOverlayWidget> {
   }) {
     final mediaQueryFromContext = MediaQuery.of(context);
     return Container(
-      width: widget.width,
-      height: widget.height - 60.0,
+      width: width,
+      height: height - titleHeight,
       constraints: BoxConstraints(
         maxWidth: mediaQueryFromContext.size.width -
             mediaQueryFromContext.padding.left -
@@ -175,7 +193,7 @@ class _LogOverlayWidgetState extends State<LogOverlayWidget> {
             controller: _scrollController,
             scrollDirection: Axis.vertical,
             reverse: true,
-            children: widget.logList.reversed
+            children: logList.reversed
                 .map(
                   (e) => Padding(
                     padding: const EdgeInsets.symmetric(vertical: 1.0),
@@ -191,8 +209,8 @@ class _LogOverlayWidgetState extends State<LogOverlayWidget> {
                         child: Text(
                           e.content
                               .reduce((a, b) => "${a.trim()}\n${b.trim()}"),
-                          style: widget.logTextStyle ??
-                              const TextStyle(fontSize: 10.0),
+                          style:
+                              logTextStyle ?? const TextStyle(fontSize: 10.0),
                         ),
                       ),
                     ),

@@ -33,3 +33,10 @@
 ## 0.0.9
 
 * add stow function,log textstyle and scroll bar
+
+## 0.0.10
+
+* fix the deployment placeholder problem
+  修复展开时占位问题
+* optimize rendering logic
+  优化渲染逻辑
