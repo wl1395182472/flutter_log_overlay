@@ -34,7 +34,7 @@ class FirstPgae extends StatefulWidget {
 
 class _FirstPgaeState extends State<FirstPgae> {
   void _incrementCounter() {
-    sLog.i('_incrementCounter');
+    sLog.i('first page add');
   }
 
   @override
@@ -92,11 +92,31 @@ class SecondPage extends StatefulWidget {
 }
 
 class _SecondPageState extends State<SecondPage> {
+  void _incrementCounter() {
+    sLog.i('second page add');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('second page'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: const [
+            ElevatedButton(
+              onPressed: FlutterLogOverlay.show,
+              child: Text('show'),
+            ),
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _incrementCounter,
+        tooltip: 'Increment',
+        child: const Icon(Icons.add),
       ),
     );
   }

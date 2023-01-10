@@ -1,6 +1,6 @@
 name: flutter_log_overlay
 description: overlay windows for log
-version: 0.0.6
+version: 0.0.7
 homepage: https://github.com/wl1395182472/flutter_log_overlay
 
 environment:

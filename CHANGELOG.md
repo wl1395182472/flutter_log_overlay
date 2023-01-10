@@ -21,3 +21,7 @@
 ## 0.0.6
 
 * update for restructure Logger from plugin:logger
+
+## 0.0.7
+
+* update LICENSE
