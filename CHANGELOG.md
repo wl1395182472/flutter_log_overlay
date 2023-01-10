@@ -24,4 +24,4 @@
 
 ## 0.0.7
 
-* update LICENSE
+* update LICENSE and pubspec.yaml
