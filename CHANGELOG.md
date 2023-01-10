@@ -25,3 +25,7 @@
 ## 0.0.7
 
 * update LICENSE and pubspec.yaml
+
+## 0.0.8
+
+* log refresh from bottom

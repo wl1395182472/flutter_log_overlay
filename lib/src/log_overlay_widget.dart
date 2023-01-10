@@ -147,7 +147,8 @@ class LogOverlayWidget extends StatelessWidget {
         context: context,
         child: ListView(
           scrollDirection: Axis.vertical,
-          children: logList
+          reverse: true,
+          children: logList.reversed
               .map(
                 (e) => Padding(
                   padding: const EdgeInsets.symmetric(vertical: 1.0),

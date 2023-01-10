@@ -33,8 +33,10 @@ class FirstPgae extends StatefulWidget {
 }
 
 class _FirstPgaeState extends State<FirstPgae> {
+  int _counter = 0;
   void _incrementCounter() {
-    sLog.i('first page add');
+    sLog.i('first page add:$_counter');
+    _counter++;
   }
 
   @override
@@ -92,8 +94,10 @@ class SecondPage extends StatefulWidget {
 }
 
 class _SecondPageState extends State<SecondPage> {
+  int _counter = 0;
   void _incrementCounter() {
-    sLog.i('second page add');
+    sLog.i('second page add:$_counter');
+    _counter++;
   }
 
   @override
