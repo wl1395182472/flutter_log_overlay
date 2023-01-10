@@ -23,9 +23,6 @@ class FlutterLogOverlay {
   ///控制弹窗的左上角的yx轴坐标(相对于屏幕)
   static double _overlayTop = 0.0;
 
-  ///窗口的背景颜色
-  static Color? _backgroundColor;
-
   ///标题的背景颜色
   static Color? _barColor;
 
@@ -62,7 +59,7 @@ class FlutterLogOverlay {
     _height = height ?? 500.0;
     _overlayLeft = overlayLeft ?? MediaQuery.of(_currentContext).padding.left;
     _overlayTop = overlayTop ?? MediaQuery.of(_currentContext).padding.top;
-    _backgroundColor = backgroundColor;
+
     _barColor = barColor;
     _itemColor = itemColor;
     _errorColor = errorColor;
@@ -70,53 +67,32 @@ class FlutterLogOverlay {
     _needClean = needClean;
   }
 
+  static Widget? logOverlayWidget;
+
   ///使用OverlayEntry全局悬浮
   static final OverlayEntry entry = OverlayEntry(
     builder: (context) {
-      final mediaQuery = MediaQuery.of(context);
       return Positioned(
         left: _overlayLeft,
         top: _overlayTop,
-        child: LogOverlayWidget(
-          width: _width,
-          height: _height,
-          logList: _logList,
-          backgroundColor: _backgroundColor,
-          barColor: _barColor,
-          itemColor: _itemColor,
-          errorColor: _errorColor,
-          needTitle: _needTitle,
-          needClean: _needClean,
-          onDoubleTap: hide,
-          onPanUpdate: (DragUpdateDetails detail) async {
-            final overlay = Overlay.of(context);
-            if (overlay != null) {
-              //屏幕约束
-              final left = _overlayLeft;
-              final right = _width + left;
-              final top = _overlayTop;
-              final bottom = _height + top;
-              if (left < mediaQuery.padding.left) {
-                _overlayLeft = mediaQuery.padding.left;
-              } else if (right >
-                  (mediaQuery.size.width - mediaQuery.padding.right)) {
-                _overlayLeft =
-                    mediaQuery.size.width - _width - mediaQuery.padding.right;
-              } else if (top < mediaQuery.padding.top) {
-                _overlayTop = mediaQuery.padding.top;
-              } else if (bottom >
-                  (mediaQuery.size.height - mediaQuery.padding.bottom)) {
-                _overlayTop = mediaQuery.size.height -
-                    _height -
-                    mediaQuery.padding.bottom;
-              } else {
-                _overlayLeft += detail.delta.dx;
-                _overlayTop += detail.delta.dy;
-              }
-              await _update();
-            }
-          },
-        ),
+        child: logOverlayWidget ??
+            LogOverlayWidget(
+              width: _width,
+              height: _height,
+              logList: _logList,
+              barColor: _barColor,
+              itemColor: _itemColor,
+              errorColor: _errorColor,
+              needTitle: _needTitle,
+              needClean: _needClean,
+              onDoubleTap: hide,
+              onPanUpdate: (DragUpdateDetails detail) async {
+                await boundaryConstraint(
+                  context: context,
+                  detail: detail,
+                );
+              },
+            ),
       );
     },
   );
@@ -149,6 +125,40 @@ class FlutterLogOverlay {
         // ignore: invalid_use_of_protected_member
         overlay.setState(() {});
       }
+    }
+  }
+
+  ///边界约束
+  static Future<void> boundaryConstraint({
+    required BuildContext context,
+    required DragUpdateDetails detail,
+  }) async {
+    final mediaQueryData = MediaQuery.of(context);
+    final overlay = Overlay.of(context);
+    if (overlay != null) {
+      //屏幕约束
+      final left = _overlayLeft;
+      final right = _width + left;
+      final top = _overlayTop;
+      final bottom = _height + top;
+      if (left < mediaQueryData.padding.left) {
+        _overlayLeft = mediaQueryData.padding.left;
+      } else if (right >
+          (mediaQueryData.size.width - mediaQueryData.padding.right)) {
+        _overlayLeft =
+            mediaQueryData.size.width - _width - mediaQueryData.padding.right;
+      } else if (top < mediaQueryData.padding.top) {
+        _overlayTop = mediaQueryData.padding.top;
+      } else if (bottom >
+          (mediaQueryData.size.height - mediaQueryData.padding.bottom)) {
+        _overlayTop = mediaQueryData.size.height -
+            _height -
+            mediaQueryData.padding.bottom;
+      } else {
+        _overlayLeft += detail.delta.dx;
+        _overlayTop += detail.delta.dy;
+      }
+      await _update();
     }
   }
 

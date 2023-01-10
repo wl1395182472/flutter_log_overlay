@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_log_overlay/flutter_log_overlay.dart';
-// import 'package:stack_trace/stack_trace.dart';
 
-class LogOverlayWidget extends StatelessWidget {
+class LogOverlayWidget extends StatefulWidget {
   ///日志列表
   final List<LogOverlayModel> logList;
 
@@ -11,9 +10,6 @@ class LogOverlayWidget extends StatelessWidget {
 
   ///窗口的高度
   final double height;
-
-  ///窗口的背景颜色
-  final Color? backgroundColor;
 
   ///标题的背景颜色
   final Color? barColor;
@@ -40,7 +36,6 @@ class LogOverlayWidget extends StatelessWidget {
     Key? key,
     required this.width,
     required this.height,
-    this.backgroundColor,
     this.barColor,
     this.itemColor,
     this.errorColor,
@@ -52,14 +47,21 @@ class LogOverlayWidget extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<LogOverlayWidget> createState() => _LogOverlayWidgetState();
+}
+
+class _LogOverlayWidgetState extends State<LogOverlayWidget> {
+  bool _showListView = true;
+
+  @override
   Widget build(BuildContext context) {
     final currentContext = MediaQuery.of(context);
     return Container(
-      width: width,
-      height: height,
-      color: backgroundColor,
+      width: widget.width,
+      height: widget.height,
+      color: Colors.transparent,
       constraints: BoxConstraints(
-        minHeight: needTitle ? 60.0 : 0.0,
+        minHeight: widget.needTitle ? 60.0 : 0.0,
         maxWidth: currentContext.size.width -
             currentContext.padding.left -
             currentContext.padding.right,
@@ -70,24 +72,30 @@ class LogOverlayWidget extends StatelessWidget {
       child: Column(
         children: [
           //标题显示
-          if (needTitle)
+          if (widget.needTitle)
             GestureDetector(
               behavior: HitTestBehavior.translucent,
-              onDoubleTap: onDoubleTap,
-              onPanUpdate: onPanUpdate,
+              onTap: () {
+                setState(() {
+                  _showListView = !_showListView;
+                });
+              },
+              onDoubleTap: widget.onDoubleTap,
+              onPanUpdate: widget.onPanUpdate,
               child: Material(
                 color: Colors.transparent,
                 child: buildBar(
-                  color: barColor ?? Colors.yellowAccent,
+                  color: widget.barColor ?? Colors.yellowAccent,
                 ),
               ),
             ),
           //堆栈信息列表
-          buildListview(
-            context: context,
-            color: itemColor ?? Colors.greenAccent,
-            errorColor: errorColor ?? Colors.redAccent,
-          ),
+          if (_showListView)
+            buildListview(
+              context: context,
+              color: widget.itemColor ?? Colors.greenAccent,
+              errorColor: widget.errorColor ?? Colors.redAccent,
+            ),
         ],
       ),
     );
@@ -98,7 +106,7 @@ class LogOverlayWidget extends StatelessWidget {
     Color? color,
   }) {
     return Container(
-      width: width,
+      width: widget.width,
       height: 60.0,
       color: color,
       alignment: Alignment.centerLeft,
@@ -110,10 +118,10 @@ class LogOverlayWidget extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            "调试控制台 当前信息数:${logList.length}\n"
-            "(此区域可以拖动 双击隐藏)",
+            "调试控制台 当前信息数:${widget.logList.length}\n"
+            "(此区域可以拖动 单击展开或收起 双击隐藏)",
           ),
-          if (needClean)
+          if (widget.needClean)
             InkWell(
               onTap: () => FlutterLogOverlay.clearLog(),
               child: const Icon(Icons.cleaning_services),
@@ -131,8 +139,8 @@ class LogOverlayWidget extends StatelessWidget {
   }) {
     final mediaQueryFromContext = MediaQuery.of(context);
     return Container(
-      width: width,
-      height: height - 60.0,
+      width: widget.width,
+      height: widget.height - 60.0,
       constraints: BoxConstraints(
         maxWidth: mediaQueryFromContext.size.width -
             mediaQueryFromContext.padding.left -
@@ -148,7 +156,7 @@ class LogOverlayWidget extends StatelessWidget {
         child: ListView(
           scrollDirection: Axis.vertical,
           reverse: true,
-          children: logList.reversed
+          children: widget.logList.reversed
               .map(
                 (e) => Padding(
                   padding: const EdgeInsets.symmetric(vertical: 1.0),
