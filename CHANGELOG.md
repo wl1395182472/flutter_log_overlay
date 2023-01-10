@@ -29,3 +29,7 @@
 ## 0.0.8
 
 * log Listview refresh from bottom
+
+## 0.0.9
+
+* add stow function,log textstyle and scroll bar

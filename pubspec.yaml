@@ -1,6 +1,6 @@
 name: flutter_log_overlay
 description: A global pop-up widget for displaying logs, which can be displayed or hidden. The global display refreshes the content asynchronously.
-version: 0.0.8
+version: 0.0.9
 homepage: https://github.com/wl1395182472/flutter_log_overlay
 
 environment:

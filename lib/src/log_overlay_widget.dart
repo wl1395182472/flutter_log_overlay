@@ -26,6 +26,9 @@ class LogOverlayWidget extends StatefulWidget {
   ///需要清除按钮
   final bool needClean;
 
+  ///日志的TextStyle
+  final TextStyle? logTextStyle;
+
   ///双击关闭
   final void Function()? onDoubleTap;
 
@@ -42,6 +45,7 @@ class LogOverlayWidget extends StatefulWidget {
     required this.logList,
     this.needTitle = true,
     this.needClean = true,
+    this.logTextStyle,
     this.onDoubleTap,
     this.onPanUpdate,
   }) : super(key: key);
@@ -52,6 +56,7 @@ class LogOverlayWidget extends StatefulWidget {
 
 class _LogOverlayWidgetState extends State<LogOverlayWidget> {
   bool _showListView = true;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   Widget build(BuildContext context) {
@@ -117,14 +122,21 @@ class _LogOverlayWidgetState extends State<LogOverlayWidget> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            "调试控制台 当前信息数:${widget.logList.length}\n"
-            "(此区域可以拖动 单击展开或收起 双击隐藏)",
+          FittedBox(
+            fit: BoxFit.fitWidth,
+            child: Text(
+              "调试控制台\n"
+              "当前信息数:${widget.logList.length}\n"
+              "(此区域可以拖动 单击展开或收起 双击隐藏)",
+            ),
           ),
           if (widget.needClean)
             InkWell(
               onTap: () => FlutterLogOverlay.clearLog(),
-              child: const Icon(Icons.cleaning_services),
+              child: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 10.0),
+                child: Icon(Icons.cleaning_services),
+              ),
             ),
         ],
       ),
@@ -153,30 +165,41 @@ class _LogOverlayWidgetState extends State<LogOverlayWidget> {
         //移除ListView顶部padding
         removeTop: true,
         context: context,
-        child: ListView(
-          scrollDirection: Axis.vertical,
-          reverse: true,
-          children: widget.logList.reversed
-              .map(
-                (e) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 1.0),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: Container(
-                      color: e.isError ? errorColor : color,
-                      alignment: Alignment.centerLeft,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 5.0,
-                        vertical: 10.0,
-                      ),
-                      child: Text(
-                        e.content.reduce((a, b) => "${a.trim()}\n${b.trim()}"),
+        child: Scrollbar(
+          controller: _scrollController,
+          radius: const Radius.circular(9),
+          thickness: 4.0,
+          // 总是显示滚动条
+          thumbVisibility: true,
+          child: ListView(
+            controller: _scrollController,
+            scrollDirection: Axis.vertical,
+            reverse: true,
+            children: widget.logList.reversed
+                .map(
+                  (e) => Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 1.0),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: Container(
+                        color: e.isError ? errorColor : color,
+                        alignment: Alignment.centerLeft,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 5.0,
+                          vertical: 10.0,
+                        ),
+                        child: Text(
+                          e.content
+                              .reduce((a, b) => "${a.trim()}\n${b.trim()}"),
+                          style: widget.logTextStyle ??
+                              const TextStyle(fontSize: 10.0),
+                        ),
                       ),
                     ),
                   ),
-                ),
-              )
-              .toList(),
+                )
+                .toList(),
+          ),
         ),
       ),
     );

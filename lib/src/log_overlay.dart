@@ -38,6 +38,9 @@ class FlutterLogOverlay {
   ///需要清除按钮
   static bool _needClean = true;
 
+  ///日志的TextStyle
+  static TextStyle? _logTextStyle;
+
   ///初始化
   ///
   ///[context]为当前页面的context
@@ -53,18 +56,19 @@ class FlutterLogOverlay {
     Color? errorColor,
     bool needTitle = true,
     bool needClean = true,
+    TextStyle? logTextStyle,
   }) {
     _currentContext = context;
     _width = width ?? 300.0;
     _height = height ?? 500.0;
     _overlayLeft = overlayLeft ?? MediaQuery.of(_currentContext).padding.left;
     _overlayTop = overlayTop ?? MediaQuery.of(_currentContext).padding.top;
-
     _barColor = barColor;
     _itemColor = itemColor;
     _errorColor = errorColor;
     _needTitle = needTitle;
     _needClean = needClean;
+    _logTextStyle = logTextStyle;
   }
 
   static Widget? logOverlayWidget;
@@ -85,6 +89,7 @@ class FlutterLogOverlay {
               errorColor: _errorColor,
               needTitle: _needTitle,
               needClean: _needClean,
+              logTextStyle: _logTextStyle,
               onDoubleTap: hide,
               onPanUpdate: (DragUpdateDetails detail) async {
                 await boundaryConstraint(
