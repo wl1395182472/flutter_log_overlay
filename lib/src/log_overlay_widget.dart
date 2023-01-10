@@ -41,13 +41,13 @@ class LogOverlayWidget extends StatelessWidget {
   ///需要清除按钮
   final bool needClean;
 
-  ///是否展开listview
+  ///是否展开ListView
   final bool showListView;
 
-  ///单击展开或收起listview
+  ///单击展开或收起ListView
   final void Function()? onTap;
 
-  ///双击隐藏listview
+  ///双击隐藏ListView
   final void Function()? onDoubleTap;
 
   ///拖动改变位置
@@ -74,7 +74,7 @@ class LogOverlayWidget extends StatelessWidget {
     this.onPanUpdate,
   }) : super(key: key);
 
-  ///控制scrollbar和listview的滚动控制
+  ///控制scrollbar和ListView的滚动控制
   final ScrollController _scrollController = ScrollController();
 
   @override
@@ -105,7 +105,7 @@ class LogOverlayWidget extends StatelessWidget {
 
           //堆栈信息列表
           if (showListView)
-            buildListview(
+            buildListView(
               context: context,
               color: itemColor ?? Colors.greenAccent,
               errorColor: errorColor ?? Colors.redAccent,
@@ -161,8 +161,8 @@ class LogOverlayWidget extends StatelessWidget {
     );
   }
 
-  ///listview
-  Widget buildListview({
+  ///ListView
+  Widget buildListView({
     required BuildContext context,
     Color? color,
     Color? errorColor,
@@ -206,7 +206,7 @@ class LogOverlayWidget extends StatelessWidget {
                           horizontal: 5.0,
                           vertical: 10.0,
                         ),
-                        child: Text(
+                        child: SelectableText(
                           e.content
                               .reduce((a, b) => "${a.trim()}\n${b.trim()}"),
                           style:
