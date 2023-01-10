@@ -1,6 +1,6 @@
 ## Usage
 
-Must
+Must(Initialize from the start page:Your Home Page)
 ```dart
   @override
   void initState() {
