@@ -28,4 +28,4 @@
 
 ## 0.0.8
 
-* log refresh from bottom
+* log Listview refresh from bottom
